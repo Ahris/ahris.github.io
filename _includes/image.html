@@ -1,0 +1,8 @@
+<a href="{% asset_path '{{ include.path-detail }}' %}" class="fluidbox-trigger">
+  <img src="{% asset_path '{{ include.path }}' %}" alt="{{ include.alt }}" />
+</a>
+{% if include.caption != "" %}
+  <div class="caption">
+    {{ include.caption }}
+  </div>
+{% endif %}
