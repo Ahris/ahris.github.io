@@ -2,7 +2,7 @@
 layout: post
 title: "Image Analogies"
 description: "Project 5 for CSE555: Computational Photography."
-og-image: "image-analogies/header2.PNG"
+og-image: "image-analogies/artistic_oil_result.png"
 tags: [comp-photo]
 ---
 
