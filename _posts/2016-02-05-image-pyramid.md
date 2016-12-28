@@ -3,7 +3,7 @@ layout: post
 title: "Image Alignment with Pyramids"
 description: "Project 1 for CSE555: Computational Photography."
 og-image: "image_pyramids/00345u_color_2_preview.png"
-tags: [projects, comp-photo]
+tags: [comp-photo]
 ---
 
 {% include image.html path="image_pyramids/00345u_color_2_preview.png"

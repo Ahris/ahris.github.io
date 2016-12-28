@@ -3,7 +3,7 @@ layout: post
 title: "Gradient Domain Fusion"
 description: "Project 2 for CSE555: Computational Photography."
 og-image: "gradient_domain_fusion/sf-npr-big.png"
-tags: [projects, comp-photo]
+tags: [comp-photo]
 ---
 
 {% include image.html path="gradient_domain_fusion/sf-npr-big.png"
