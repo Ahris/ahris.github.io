@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>alice wang | Gradient Domain Fusion</title>
+  <meta name="description" content="Project 2 for CSE555: Computational Photography.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Gradient Domain Fusion">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:4000/posts/gradient-domain-fusion">
+  <meta property="og:description" content="Project 2 for CSE555: Computational Photography.">
+  <meta property="og:site_name" content="alice wang">
+  <meta property="og:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="http://localhost:4000/posts/gradient-domain-fusion">
+  <meta name="twitter:title" content="Gradient Domain Fusion">
+  <meta name="twitter:description" content="Project 2 for CSE555: Computational Photography.">
+  <meta name="twitter:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="http://localhost:4000/feed.xml" type="application/rss+xml" rel="alternate" title="alice wang Last 10 blog posts" />
+
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="alice wang">alice wang</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <span class="icon icon-android-person"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/Ahris" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@Ahris" target="_blank" title="Medium">
+          <span class="icon icon-android-favorite-outline"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://saltyalice.tumblr.com/archive" target="_blank" title="Tumblr">
+          <span class="icon icon-android-color-palette"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:alicewang54@gmail.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Gradient Domain Fusion</h1>
+            <p>Project 2 for CSE555: Computational Photography.</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                February 25, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  9 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/comp-photo">comp-photo</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/gradient_domain_fusion/sf-npr-big.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/sf-npr-big.png" alt="San Francisco NPR" />
+</a></p>
+
+<div class="caption">
+    San Francisco in a non-photo realistic rendering
+  </div>
+
+<p>Gradient-domain image processing is a technique with numerous applications. This project explores image blending and non-photo realistic rendering. Given an input image, gradient domain image processing first finds the gradient of the given image, and then solves for a new image using a system of equations. The equations act as constraints, defining what problem is solved. In this project, we will explore a simple toy problem, Poisson blending, and non-photo realistic rendering. The code for can be found <a href="https://github.com/jmecom/gradient-domain-fusion">here</a>. Jordan Mecom and I worked together on this project.</p>
+
+<h2 id="toy-example">Toy Example</h2>
+
+<p>To get started with linear program solvers in MATLAB, we got our feet wet with a little program that solves for the original image. The constraints are given as the x and y directional gradients of the original image and a single pixel intensity as the seeding value. This solver should return the original image, which only has one channel. We evaluated our final image with an error value, which was the sum of square differences between the original image and the resulting image.</p>
+
+<p>The gradients define the change in intensity from a pixel to its neighboring pixels, so with one pixel predefined, there can only be one resulting image. We built the <code class="highlighter-rouge">A</code> constraint matrix with two constraints per pixel - a constraint for the gradient in the x-direction and one for the y-direction. There was one additional constraint at the end to specify the intensity of one seeding pixel. The <code class="highlighter-rouge">b</code> matrix contains the actual value of the image gradients and the seeding intensity. The algorithm for toy reconstruction is:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">let</span> <span class="n">img</span> <span class="n">be</span> <span class="n">an</span> <span class="nb">input</span>
+
+<span class="k">for</span> <span class="n">each</span> <span class="n">pixel</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="n">img</span>
+    <span class="c"># Objective 1</span>
+    <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">b</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="n">source</span> <span class="n">image</span> <span class="n">x</span> <span class="n">gradient</span>
+    <span class="n">e</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="c"># Objective 2</span>
+    <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>   <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">b</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="n">source</span> <span class="n">image</span> <span class="n">y</span> <span class="n">gradient</span>
+
+<span class="c"># Objective 3</span>
+<span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">b</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="n">img</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span></code></pre></figure>
+
+<p>Our objective function was to minimize the error value. We simply solved for these constraints using <code class="highlighter-rouge">A\b</code>. The result is below:</p>
+
+<center>
+    <a href="/assets/gradient_domain_fusion/toy1.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/toy1.png" alt="image" />
+</a>
+
+  <div class="caption">
+    Azura from Fire Emblem Fates, which is a great game by the way!
+  </div>
+
+
+</center>
+
+<p>To really understand what was going on, we messed with the various parameters in the linear program. The first image is what happens when we don’t use y gradient constraints (error of 151.2625), the second doesn’t use x gradient constraints (error of 159.6582), and the last gif shows the image solved with various starting intensities. The intensities start at 1, resulting in the darkest image, to .05, which results in the lightest image. The error values were largest around 1 and .05 and were smallest around .5. This is because the true intensity of the first pixel of the image is <code class="highlighter-rouge">0.4745</code>.</p>
+
+<center>
+    <a href="/assets/gradient_domain_fusion/toy_no_y.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/toy_no_y.png" alt="image" />
+</a>
+
+
+    <a href="/assets/gradient_domain_fusion/toy_no_x.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/toy_no_x.png" alt="image" />
+</a>
+
+
+    <a href="/assets/gradient_domain_fusion/toy.gif" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/toy.gif" alt="image" />
+</a>
+
+
+</center>
+
+<p>At first, we tried to directly edit the values of the sparse matrix in each loop. Our program ran significantly faster once we built arrays to instantiate the sparse matrix at the very end. The run time was <code class="highlighter-rouge">4.96 seconds</code> on average.</p>
+
+<h2 id="poisson-blending">Poisson Blending</h2>
+
+<p>The idea behind Poisson blending is to take two images - a source and a target - and blend the source onto the target image in a convincing way. The edges of the source image tries to match the color of the target as close as possible while the interior pixels try to preserve the original gradients as close as possible. This is accomplished by solving for the new image using a Poisson equation, defined as follows:</p>
+
+<p><a href="/assets/gradient_domain_fusion/poisson_eq.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/poisson_eq.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Poisson image editing equation, Perez et al.
+  </div>
+
+<p>To implement Poisson blending, one can express the problem as a linear program and solve the equation <code class="highlighter-rouge">Av = b</code> where <code class="highlighter-rouge">v</code> is the vector to be solved. The vectors <code class="highlighter-rouge">v</code> and <code class="highlighter-rouge">b</code> are the size of the pixel count of the background image and <code class="highlighter-rouge">A</code> is pixel count by pixel count in size.</p>
+
+<p>The algorithm we implemented is shown below, in pseudocode:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">let</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="ow">and</span> <span class="n">mask</span> <span class="n">be</span> <span class="n">inputs</span>
+
+<span class="k">for</span> <span class="n">each</span> <span class="n">channel</span>
+  <span class="n">loop</span> <span class="n">over</span> <span class="n">pixels</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">target</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="n">outside</span> <span class="n">of</span> <span class="n">the</span> <span class="n">mask</span><span class="p">,</span>
+      <span class="c"># Just keep the background in this case.</span>
+      <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="mi">1</span>
+      <span class="n">b</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="n">target</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>  <span class="c"># e indexes the current equation.</span>
+
+    <span class="k">else</span><span class="p">,</span>
+      <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="mi">4</span>
+      <span class="n">b</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="n">source</span> <span class="n">gradient</span> <span class="n">at</span> <span class="n">p</span>
+
+      <span class="k">for</span> <span class="n">each</span> <span class="n">neighbor</span> <span class="n">n</span> <span class="n">of</span> <span class="n">p</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="n">inside</span> <span class="n">mask</span><span class="p">,</span>
+          <span class="n">b</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+=</span> <span class="n">target</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="c"># Handles second sum in Poisson equation</span>
+        <span class="k">else</span><span class="p">,</span>
+          <span class="n">A</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="n">n</span><span class="p">)</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>         <span class="c"># Handles first sum in Poisson equation</span>
+  <span class="n">solve</span> <span class="n">Av</span> <span class="o">=</span> <span class="n">b</span>
+
+<span class="n">combine</span> <span class="n">the</span> <span class="n">channels</span> <span class="ow">and</span> <span class="k">return</span> <span class="n">the</span> <span class="n">blended</span> <span class="n">image</span></code></pre></figure>
+
+<p>The source gradient is simply the gradient in all four directions. The equation is <code class="highlighter-rouge">source(y,x)*4 + (source(y-1,x) + source(y+1,x) + source(y,x+1) + source(y,x-1))</code>, if pixel <code class="highlighter-rouge">p</code> is at <code class="highlighter-rouge">(y,x)</code>. We set <code class="highlighter-rouge">A(y,x) = 4</code> because one row of <code class="highlighter-rouge">A</code> handles each gradient direction. It’s possible to split the equations out to one per row, but this was easier. The <code class="highlighter-rouge">A(n) = -1</code> terms correspond to the <code class="highlighter-rouge">v_i - v_j</code> term in the first sum of the Poisson equation, which is only set if the <code class="highlighter-rouge">jth</code> pixel is in the mask. Otherwise, <code class="highlighter-rouge">v_i - t_j</code> is used, and so we add the target to <code class="highlighter-rouge">b</code>.</p>
+
+<p>The results of Poisson Blending can be seen below</p>
+
+<p><a href="/assets/gradient_domain_fusion/poisson/arial_ocean.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/poisson/arial_ocean.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Clockwise: source image, target image, Poisson image and naive image
+  </div>
+
+<p><a href="/assets/gradient_domain_fusion/poisson/duck_pond.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/poisson/duck_pond.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Clockwise: source image, target image, Poisson image and naive image
+  </div>
+
+<p><a href="/assets/gradient_domain_fusion/poisson/bottle_sand.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/poisson/bottle_sand.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Clockwise: source image, target image, Poisson image and naive image
+  </div>
+
+<p>However, Poisson blending didn’t quite always work. Discoloration occurs in the image below of the dog blended with the picture of SR71 Blackbird pilots. The algorithm tends to work best for pictures where the source can pick up colors from the target and still look plausible. For example, pictures of a bear blended into water, a sun into sky, or a rainbow into clouds look good because picking up colors from the target helps the blending process. However, picking up colors when pasting a dog onto a runway doesn’t produce as good of an image.</p>
+
+<p><a href="/assets/gradient_domain_fusion/poisson/dog_jet.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/poisson/dog_jet.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Clockwise: source image, target image, Poisson image and naive image
+  </div>
+
+<h2 id="mixed-gradients">Mixed Gradients</h2>
+
+<p>Mixed gradients is a technique for image blending that is essentially the same as Poisson Blending, except instead of always using the source gradient, the <code class="highlighter-rouge">max(abs(source gradient), abs(target gradient))</code> is used to select either the source or target gradient. Mixed gradients notably outperform Poisson blending in some cases, as shown below.</p>
+
+<p><a href="/assets/gradient_domain_fusion/washu_rainbow.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/washu_rainbow.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    (Top Left) Original target. (Top Right) Original source. (Mid Left) Mask. (Mid Right) Naive. (Bottom Left) Mixed. (Bottom Right) Poisson.
+  </div>
+
+<p><a href="/assets/gradient_domain_fusion/DD_wall.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/DD_wall.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    (Top Left) Original target. (Top Right) Original source. (Mid Left) Mask. (Mid Right) Naive. (Bottom Left) Mixed. (Bottom Right) Poisson.
+  </div>
+
+<p>In both images, the blurriness around the mask is removed or reduced with mixed gradients. In particular, using mixed gradients is a good idea when the source image is partly transparent. The algorithm chooses whichever ‘‘source or destination structure is the more salient at each location’’ (Perez, et al.) and achieves a better quality output.</p>
+
+<h2 id="extra-credit">Extra Credit</h2>
+
+<p>We implemented non-photo realistic rendering as extra credit. Our reference for this section was <a href="http://grail.cs.washington.edu/projects/gradientshop/">GradientShop</a>, particularly the slides from a SIGGRAPH 2010 talk, which can be found <a href="http://grail.cs.washington.edu/projects/gradientshop/">here</a>.</p>
+
+<p>This problem was constructed similarly, but instead of solving a Poisson equation, we solved the energy function specified in the linked slides (specifically on slide 74). This function is defined as follows</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">let</span> <span class="n">u</span> <span class="n">be</span> <span class="n">the</span> <span class="n">unfiltered</span> <span class="nb">input</span> <span class="n">image</span>
+<span class="n">let</span> <span class="n">f</span> <span class="n">be</span> <span class="n">the</span> <span class="n">filtered</span> <span class="n">output</span> <span class="n">image</span>
+<span class="n">let</span> <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span> <span class="n">be</span> <span class="n">desired</span> <span class="n">pixel</span><span class="o">-</span><span class="n">differences</span>
+<span class="n">let</span> <span class="n">d</span> <span class="n">be</span> <span class="n">desired</span> <span class="n">pixel</span><span class="o">-</span><span class="n">values</span>
+<span class="n">let</span> <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wd</span> <span class="n">be</span> <span class="n">constraint</span> <span class="n">weights</span>
+
+<span class="n">Then</span> <span class="n">the</span> <span class="n">energy</span> <span class="n">function</span> <span class="ow">is</span>
+<span class="n">min_f</span> <span class="p">{</span> <span class="n">wx</span><span class="p">(</span><span class="n">fx</span> <span class="o">-</span> <span class="n">gx</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span> <span class="o">+</span> <span class="n">wy</span><span class="p">(</span><span class="n">fy</span> <span class="o">-</span> <span class="n">gy</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span> <span class="o">+</span> <span class="n">wd</span><span class="p">(</span><span class="n">f</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span><span class="o">^</span><span class="mi">2</span> <span class="p">}</span></code></pre></figure>
+
+<p>The choice of <code class="highlighter-rouge">gx, gy</code>, <code class="highlighter-rouge">d</code>, and the weights all depend on the specific result you’re trying to achieve. Our algorithm for non-photo realistic rendering is</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c"># Calculate edges</span>
+<span class="n">let</span> <span class="n">ux</span><span class="p">,</span> <span class="n">uy</span> <span class="n">be</span> <span class="n">x</span> <span class="ow">and</span> <span class="n">y</span> <span class="n">gradients</span> <span class="n">of</span> <span class="n">u</span>
+<span class="n">let</span> <span class="n">e</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">ux</span><span class="o">.*</span><span class="n">ux</span> <span class="o">+</span> <span class="n">uy</span><span class="o">.*</span><span class="n">uy</span><span class="p">)</span>
+
+<span class="c"># Specify everything</span>
+<span class="n">gx</span> <span class="o">=</span> <span class="n">e</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">.*</span> <span class="n">ux</span>   <span class="c"># p is a pixel</span>
+<span class="n">gy</span> <span class="o">=</span> <span class="n">e</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">.*</span> <span class="n">uy</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">u</span>
+<span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wd</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c"># Solve</span>
+<span class="n">solve</span> <span class="n">Af</span> <span class="o">=</span> <span class="n">b</span> <span class="n">similarly</span> <span class="n">to</span> <span class="n">above</span> <span class="n">to</span> <span class="n">calculate</span> <span class="n">f</span>
+
+<span class="c"># Stylize</span>
+<span class="n">overlay</span> <span class="n">the</span> <span class="n">complement</span> <span class="n">of</span> <span class="n">e</span> <span class="n">onto</span> <span class="n">f</span> <span class="n">to</span> <span class="n">achieve</span> <span class="n">an</span> <span class="n">outline</span> <span class="n">effect</span></code></pre></figure>
+
+<p>On average, the algorithm took <code class="highlighter-rouge">19.215 seconds</code> to run on each image. The results are below.</p>
+
+<p><a href="/assets/gradient_domain_fusion/baseballwow.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/baseballwow.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    (Left) Original Image. (Middle) Our NPR Blending. (Right) GradientShop's NPR Blending, Bhat et al.
+  </div>
+
+<p><a href="/assets/gradient_domain_fusion/npr.png" class="fluidbox-trigger">
+  <img src="/assets/gradient_domain_fusion/npr.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    (Left) Original image.  (Right) NPR blended image.
+  </div>
+
+<p>In the last image of Hideo Kojima, the lines are relatively thick compares to his facial features, so it obstructs his face and makes him unrecognizable. Faces require a lot more attention to detail and finer lines. If we were to improve our algorithm, we should resize the line width according to the image size. This would fix the issues of harsh lines on the small picture of Kojima.</p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Gradient Domain Fusion - http://localhost:4000/posts/gradient-domain-fusion ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/posts/gradient-domain-fusion', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=http://localhost:4000/posts/gradient-domain-fusion', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script>
+              (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//ahrisu.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    <a href="/about" title="About me">Alice Wang's</a> site for her projects, tutorials, games, art and more. Built with Jekyll and <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">Chalk</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>alice wang | Retro Programming with Chip8</title>
+  <meta name="description" content="Chip8 game for the 2017 Global Game Jam">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Retro Programming with Chip8">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:4000/posts/piper-chip8">
+  <meta property="og:description" content="Chip8 game for the 2017 Global Game Jam">
+  <meta property="og:site_name" content="alice wang">
+  <meta property="og:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="http://localhost:4000/posts/piper-chip8">
+  <meta name="twitter:title" content="Retro Programming with Chip8">
+  <meta name="twitter:description" content="Chip8 game for the 2017 Global Game Jam">
+  <meta name="twitter:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="http://localhost:4000/feed.xml" type="application/rss+xml" rel="alternate" title="alice wang Last 10 blog posts" />
+
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="alice wang">alice wang</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <span class="icon icon-android-person"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/Ahris" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@Ahris" target="_blank" title="Medium">
+          <span class="icon icon-android-favorite-outline"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://saltyalice.tumblr.com/archive" target="_blank" title="Tumblr">
+          <span class="icon icon-android-color-palette"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:alicewang54@gmail.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Retro Programming with Chip8</h1>
+            <p>Chip8 game for the 2017 Global Game Jam</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                January 23, 2017
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  7 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/games">games</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/global_game_jam_2017/intro.png" class="fluidbox-trigger">
+  <img src="/assets/global_game_jam_2017/intro.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Intro screen
+  </div>
+
+<p>I went into this year’s Global Game Jam knowing that I wanted to make a Chip8 game since I recently implemented an <a href="https://github.com/Ahris/chip8">interpreter</a> for it. Chip8 is especially appealing because the system is easy to understand and you can reason through all of the memory operations in your head. The games that came out of the <a href="http://www.awfuljams.com/octojam-iii">OctoJam</a> were also a source of inspiration - some of the final products are seriously cool! You should check out the video they made to showcase the results.</p>
+
+<p>So, the theme to this year’s Global Game Jam is “waves”. The cute, little game that <a href="http://jmecom.github.io/">Jordan Mecom</a>, <a href="https://lillworkspace.wordpress.com/">Lillian Wang</a>, and I made is called <strong>Piper</strong>. Our game was inspired by Pixar’s short film of the same name. Piper is a little bird who is learning to hunt for shells and goodies on the beach. But when the wave comes in, she needs to hide in the sand to avoid getting wet. The waves wash in new goodies for Piper to pick up. Your goal is to collect as many goodies as you can and to avoid getting wet.</p>
+
+<p>Use <code class="highlighter-rouge">WASD</code> to move around and <code class="highlighter-rouge">E</code> to hide in the sand. Without further ado, you can play the game <a href="http://johnearnest.github.io/Octo/index.html?gist=43849adc04c2deab31e94c5932ffbca8">here</a>!</p>
+
+<h2 id="challenges">Challenges</h2>
+
+<p>Making this game was a refreshing learning experience. My biggest take away was being able to think and code in terms of memory directly. I wanted to write down my thoughts so others can go on to make even better Chip8 games!</p>
+
+<p><a href="/assets/global_game_jam_2017/gameplay.png" class="fluidbox-trigger">
+  <img src="/assets/global_game_jam_2017/gameplay.png" alt="image" />
+</a></p>
+
+<h3 id="design">Design</h3>
+
+<p>The hardest part was designing a game to the constraints of the system. The entirety of Friday was spent on brainstorming ideas. Our ideas started off overly complicated - we wanted too many collisions! We even considered generating random looking waves, which seems silly in retrospect.</p>
+
+<p>We came up with two rules to design game play that is feasible for Chip8.</p>
+<ol>
+  <li>Only 1 short game play loop</li>
+  <li>Player character could only collide with one* object</li>
+</ol>
+
+<p>We eventually decided on the following loop:</p>
+<ul>
+  <li>Pick up goodies</li>
+  <li>Hide from wave</li>
+  <li>Respawn goodies</li>
+  <li>Repeat</li>
+</ul>
+
+<p>The game ended up balancing itself. The random number generator favored low numbers, which meant the goodies would generate near the top of the screen. The top of the screen is a riskier area since standing there gives you less time to react to a wave animation. If you hide, then you can’t move or pick up items, so it’s a balance between risk and reward. I’m happy with how satisfying the game loop felt, given the size of the game.</p>
+
+<h3 id="memory">Memory</h3>
+<p>Our next biggest constraint was memory. We only had 16 registers and 4k of total memory (including space for the interpreter). At first, I thought we would have to save everything to registers. Instead, we created labels in memory as scratch space to load and save to as needed.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">    <span class="c"># Goodies data ({alive=1, dead=0}, x, y)</span>
+    <span class="p">:</span> <span class="n">star_data</span>    <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span>
+
+    <span class="o">...</span>
+
+    <span class="n">i</span> <span class="p">:</span><span class="o">=</span> <span class="n">star_data</span>
+    <span class="n">load</span> <span class="n">v2</span>
+    <span class="n">i</span> <span class="p">:</span><span class="o">=</span> <span class="n">star</span>
+    <span class="n">update</span><span class="o">-</span><span class="n">goody</span> <span class="c"># Function call</span>
+    <span class="n">i</span> <span class="p">:</span><span class="o">=</span> <span class="n">star_data</span>
+    <span class="n">save</span> <span class="n">v0</span></code></pre></figure>
+
+<p>Since functions don’t have arguments, and because we don’t have a stack, we had to load the arguments from <code class="highlighter-rouge">star_data</code> into registers before doing a call.</p>
+
+<h3 id="collisions">Collisions</h3>
+<p>I would normally think of collisions as a problem of 3D space, but Chip8 collisions also necessitated a clever approach. Sprites are drawn to the screen with an XOR operation. If a bit is flipped from 1 to 0 during the draw call, then vf, the collision register, is set to 1. We had to draw each goody sprite separately to check for collisions, which is a slow process. This method is too slow for the wave since the wave requires 8 sprite draws per frame (with 5 frames total). Instead, the wave was triggered on a timer. When we knew the timer was at 0, we checked that the player was in the hidden state. We also added a heuristic to compare the player’s location with the max y edge of the wave.</p>
+
+<h3 id="timer">Timer</h3>
+<p>On the topic of timer, there is only one timer in the Chip8 system. This single timer has to be shared between all operations that requires the notion of cycles or time. To circumvent this shortage, we used registers to cache the timer value by sampling the timer at regular intervals.</p>
+
+<h3 id="splash-screen">Splash Screen</h3>
+<p>In any modern game engine, you can just draw the art and import it into your game. With Chip8, the art needed to be converted to binary, and then chunked it up into “tiles”, and then drawn tile by tile to the screen. A tile is an 8 pixel wide by x pixel tall area of the total image, where x can be any value from 1 to 15. Here’s our script to process the images into binary data:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">scipy.misc</span> <span class="kn">import</span> <span class="n">imread</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="n">im</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="s">"./wave/frame-4b-cut.png"</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>     <span class="c"># row, the stride</span>
+<span class="n">x</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">im</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># col</span>
+
+<span class="c"># Convert image to binary</span>
+<span class="n">result_bin</span> <span class="o">=</span> <span class="s">""</span>
+<span class="n">num_tiles</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="mi">8</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_tiles</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>  <span class="c"># height of tile # y</span>
+        <span class="n">result_bin</span> <span class="o">+=</span> <span class="s">"0b"</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>  <span class="c"># width of tile # x</span>
+            <span class="n">pixel</span> <span class="o">=</span> <span class="n">im</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="mi">8</span><span class="p">]</span>  <span class="c"># row, col -&gt; y, x</span>
+            <span class="n">result_bin</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pixel</span> <span class="o">/</span> <span class="mi">255</span><span class="p">))</span>
+        <span class="n">result_bin</span> <span class="o">+=</span> <span class="s">" "</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result_bin</span><span class="p">)</span></code></pre></figure>
+
+<h3 id="waves">Waves</h3>
+<p>Props to Lillian for drawing this beautiful wave animation - I didn’t think Chip8’s simple graphics (with only 64x32 pixels) could look so good!</p>
+
+<p><a href="/assets/global_game_jam_2017/lillian_waves.gif" class="fluidbox-trigger">
+  <img src="/assets/global_game_jam_2017/lillian_waves.gif" alt="image" />
+</a></p>
+
+<div class="caption">
+    Lillian's gorgeous wave animation
+  </div>
+
+<p>Coding the waves took the longest portion of the jam. At first, we tried drawing the whole screen, but that was entirely to slow. To optimize, we found the smallest area we could draw of each frame, found the offset to draw the strip, and then chopped it into tiles, and only drew the necessary tiles. In fact, this was still a good number of draw calls since erasing the wave frame from the screen involved re-drawing the sprite, which XORs the pixel to its original state.</p>
+
+<p>Most Chip8 games have relatively primitive graphics, so we are really happy we were able to get a cool animation and splash screen in our game!</p>
+
+<h3 id="smooth-animations">Smooth Animations</h3>
+<p>One hot tip for smooth animations is to cap the frame rate with the delay timer. We animated the bird sprite with two frames and the sprite would flicker if the refresh rate wasn’t capped. Also, be sure to erase each frame (with another call to draw) before you draw the next frame of the animation.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python">    <span class="n">i</span> <span class="p">:</span><span class="o">=</span> <span class="n">bird</span><span class="o">-</span><span class="mi">0</span>
+    <span class="n">sprite</span> <span class="n">px</span> <span class="n">py</span> <span class="mi">8</span> <span class="c"># draw</span>
+    <span class="n">sprite</span> <span class="n">px</span> <span class="n">py</span> <span class="mi">8</span> <span class="c"># erase</span>
+    <span class="n">i</span> <span class="p">:</span><span class="o">=</span> <span class="n">bird</span><span class="o">-</span><span class="mi">1</span>
+    <span class="n">sprite</span> <span class="n">px</span> <span class="n">py</span> <span class="mi">8</span> <span class="c"># draw</span>
+    <span class="n">sprite</span> <span class="n">px</span> <span class="n">py</span> <span class="mi">8</span> <span class="c"># erase</span></code></pre></figure>
+
+<p>Another fun fact about the bird animation is that our bird timer relied on the fact that the registers overflowed. We conditioned which frame to draw on the value of the bird timer and incremented it every time the bird was drawn.</p>
+
+<p>The animation’s timings actually impacted the game play. For example, making the waves faster looked better, but created unnecessary difficulty since it would be leave less time to react to the wave. I also chose to freeze the wave animation for 30 cycles (~.5 seconds) on game over so the player can see why they died. Personally, I thought it felt better to receive feedback and understand why I died each time.</p>
+
+<p><a href="/assets/global_game_jam_2017/outro.gif" class="fluidbox-trigger">
+  <img src="/assets/global_game_jam_2017/outro.gif" alt="image" />
+</a></p>
+
+<div class="caption">
+    Poor, wet Piper
+  </div>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>I’m really happy with how our game turned out! At one point during the jam, while debugging an issue with the waves, I almost gave up on completing the game on time. Thankfully, a good night’s sleep and a fresh eye helped me catch the issue. We even found time to polish the game and add a fancy intro and outro screen. Hopefully you can play our game and enjoy it as much as we liked making it!</p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Retro Programming with Chip8 - http://localhost:4000/posts/piper-chip8 ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/posts/piper-chip8', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=http://localhost:4000/posts/piper-chip8', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script>
+              (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//ahrisu.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    <a href="/about" title="About me">Alice Wang's</a> site for her projects, tutorials, games, art and more. Built with Jekyll and <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">Chalk</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

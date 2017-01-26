@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>alice wang | Image Quilting for Texture Synthesis and Transfer</title>
+  <meta name="description" content="Project 3 for CSE555: Computational Photography.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Image Quilting for Texture Synthesis and Transfer">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:4000/posts/image-quilting">
+  <meta property="og:description" content="Project 3 for CSE555: Computational Photography.">
+  <meta property="og:site_name" content="alice wang">
+  <meta property="og:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="http://localhost:4000/posts/image-quilting">
+  <meta name="twitter:title" content="Image Quilting for Texture Synthesis and Transfer">
+  <meta name="twitter:description" content="Project 3 for CSE555: Computational Photography.">
+  <meta name="twitter:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="http://localhost:4000/feed.xml" type="application/rss+xml" rel="alternate" title="alice wang Last 10 blog posts" />
+
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="alice wang">alice wang</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <span class="icon icon-android-person"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/Ahris" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@Ahris" target="_blank" title="Medium">
+          <span class="icon icon-android-favorite-outline"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://saltyalice.tumblr.com/archive" target="_blank" title="Tumblr">
+          <span class="icon icon-android-color-palette"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:alicewang54@gmail.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Image Quilting for Texture Synthesis and Transfer</h1>
+            <p>Project 3 for CSE555: Computational Photography.</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                March 22, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  6 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/comp-photo">comp-photo</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <p><em>Developed by Alice Wang and Jordan Mecom.</em></p>
+
+<p>View the repository <a href="https://github.com/jmecom/image-quilting/">here</a>. This is a cross post from <a href="https://jmecom.github.io/projects/computational-photography/texture-synthesis/">Jordan’s site</a>.</p>
+
+<p>Texture synthesis is the process of generating a larger texture image from a smaller source image. This project generates textures using an idea called image quilting, developed by Alexei A. Efros and William T. Freeman in their SIGGRAPH 2001 paper called <a href="http://graphics.cs.cmu.edu/people/efros/research/quilting/quilting.pdf">Image Quilting for Texture Synthesis and Transfer</a>. The idea is to stich together a larger texture from blocks (size specified by user) sampled from the source texture. To generate seamless textures, blocks are first selected such that they agree with their neighbor along some overlapping region. Then, the overlapping region is cut to minmize the sum of squared differences.</p>
+
+<p>Texture transfer is a similar problem in which a taget image is rendered using a source texture. This algorithm follows the same process as texture synthesis, but with the additional constraint of having each block match a target image using some correspondence map. Often, the map is the luminance of the target image. The final image retains the low frequency details of the target image but it composed of the texture instead.</p>
+
+<h2 id="approach-and-algorithm-analysis">Approach and Algorithm Analysis</h2>
+
+<h3 id="texture-synthesis">Texture Synthesis</h3>
+
+<p>Past texture synthesis algorithms create the new texture pixel by pixel, but Efros and Freeman noticed that most pixels are essentially predetermined by the pixels chosen previously. Instead, textures should be generated with larger units, which we will call a block.</p>
+
+<p>The algorithm selects a random block for the top left corner. For each new potential block that can placed next, we evaluate the error between the overlap of the existing and new block. The error is evaluated using a simple sum of squared differences. The block is randomly selected amongst the blocks who are within some user defined margin of the best matching block. Randomly choosing the block in this way prevents the same block from being repeatedly chosen. This process continues until the entire desired output image is filled up.</p>
+
+<p>Psuedo-code demonstrating the algorithm is below</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">for</span> <span class="n">i</span> <span class="o">=</span> <span class="n">number</span> <span class="n">of</span> <span class="n">rows</span> <span class="n">to</span> <span class="n">fill</span>
+  <span class="k">for</span> <span class="n">j</span> <span class="o">=</span> <span class="n">number</span> <span class="n">of</span> <span class="n">columns</span> <span class="n">to</span> <span class="n">fill</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">j</span><span class="o">==</span><span class="mi">1</span>
+      <span class="n">choose</span> <span class="n">a</span> <span class="n">random</span> <span class="n">block</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">1</span>    <span class="c"># first column</span>
+      <span class="k">for</span> <span class="n">each</span> <span class="n">possible</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">source</span> <span class="n">image</span>
+        <span class="n">evaluate</span> <span class="n">top</span> <span class="n">edge</span> <span class="n">overlap</span> <span class="n">error</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="n">j</span><span class="o">==</span><span class="mi">1</span>    <span class="c"># first row</span>
+      <span class="k">for</span> <span class="n">each</span> <span class="n">possible</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">source</span> <span class="n">image</span>
+        <span class="n">evaluate</span> <span class="n">left</span> <span class="n">edge</span> <span class="n">overlap</span> <span class="n">error</span>
+    <span class="k">else</span>
+      <span class="k">for</span> <span class="n">each</span> <span class="n">possible</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">source</span> <span class="n">image</span>
+        <span class="n">evaluate</span> <span class="n">top</span> <span class="ow">and</span> <span class="n">left</span> <span class="n">overlap</span> <span class="n">errors</span>
+  <span class="n">pick</span> <span class="n">a</span> <span class="n">random</span> <span class="n">block</span> <span class="n">out</span> <span class="n">of</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">potential</span> <span class="n">matches</span>
+  <span class="n">perform</span> <span class="n">minimum</span> <span class="n">boundary</span> <span class="n">cut</span>
+  <span class="n">place</span> <span class="n">the</span> <span class="n">chosen</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">output</span> <span class="n">image</span></code></pre></figure>
+
+<p>The runtime for the algorithm depends on size of the texture, desired output image, and block size. On a 2011 Macbook Pro, images around 125px by 125px, a block size of 20, and an output image size of around 250px by 250px takes on average 25 seconds to complete.</p>
+
+<p>Our biggest challenge was understanding the best way to sample the blocks. We both assumed blocks from the sample texture were supposed to be regularly spaced. Instead, blocks can be taken from any point of the sample texture. This bug caught us up for about a day, but we easily finished this portion of the lab after fixing this error.</p>
+
+<p>The results of our image quilting implementation are below. The original soruce texture is shown, followed by image quilting without the min boundary cut, and lastly by image quilting with the min boundary cut.</p>
+
+<p><a href="/assets/texture-synthesis/texture-all.png" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/texture-all.png" alt="image" />
+</a></p>
+
+<p>The non-required images that we chose range from more stochastic (starfield) to uniform (Japanese wallpaper). The algorithm performs well on both cases. In particular, the min-cut version of starfield looks very good. We were curious how the algorithm would perform on this texture, as a compelling starfield shouldn’t contain obvious repetitions, which the output does not. In a way, the image quilted starfield looks better than starfields made by digital artists attempting to make a starfield look random.</p>
+
+<p>Something else to note is that the non min-cut version of the Japanese wallpaper looks better than the min-cut version. The bottom right of the min-cut version has a noticeable seam between texels. This example shows that min-cut does not always improve the output.</p>
+
+<p>Lastly, the wood floor case shows that algorithm sometimes fails. The source texture contains a large, light colored plank throughout the middle. Thus, in the output that plank stretches across the whole image. Of course, this wouldn’t be the case in the original picture of the floor. To improve this result, a larger sample of the wood floor is required.</p>
+
+<h3 id="texture-transfer">Texture Transfer</h3>
+
+<p>Similar to texture synthesis, texture transfer uses the block generation process to create the final image. The difference is that it uses an additional constraint for matching the correspondence map of the input texture to the target image. The correspondence maps, in our case, are the luminance maps of the target image and input texture (ie. the <code class="highlighter-rouge">rgb2gray</code> version of both images). An additional parameter, <code class="highlighter-rouge">alpha</code> defines how much to weight the tradeoff between making the output texture seameless, and keeping the result true to the target image. On average, texture transfer took about 3 minutes to run.</p>
+
+<p>The results of texture transfer are shown below.</p>
+
+<p><em>Source texture</em></p>
+
+<p><a href="/assets/texture-synthesis/starry-night.jpg" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/starry-night.jpg" alt="image" />
+</a></p>
+
+<p><em>Target image</em></p>
+
+<p><a href="/assets/texture-synthesis/ggb.jpg" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/ggb.jpg" alt="image" />
+</a></p>
+
+<p><em>Output image</em></p>
+
+<p><a href="/assets/texture-synthesis/ggb-transfer.png" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/ggb-transfer.png" alt="image" />
+</a></p>
+
+<p>This example was inspired by the recent paper A Neural Algorithm of Artistic Style by Leon A. Gatys, Alexander S. Ecker, and Matthias Bethge. A similar example can be seen <a href="https://github.com/jcjohnson/neural-style">here</a>. Clearly, image quilting isn’t as effective as more sophisticated approaches. Still, it’s interesting to constrast the two algorithms output to the same problem.</p>
+
+<p><em>Source texture</em></p>
+
+<p><a href="/assets/texture-synthesis/fabric.jpg" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/fabric.jpg" alt="image" />
+</a></p>
+
+<p><em>Target image</em></p>
+
+<p><a href="/assets/texture-synthesis/obama.jpg" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/obama.jpg" alt="image" />
+</a></p>
+
+<p><em>Output image</em></p>
+
+<p><a href="/assets/texture-synthesis/obama-fabric-transfer.png" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/obama-fabric-transfer.png" alt="image" />
+</a></p>
+
+<p>Texture transfer tends to perform best when there is a wide range of brightness in both the source and target. This example highlights that, notably around Obama’s suit and tie.</p>
+
+<p><em>Source texture</em></p>
+
+<p><a href="/assets/texture-synthesis/yogurt.jpg" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/yogurt.jpg" alt="image" />
+</a></p>
+
+<p><em>Target image</em></p>
+
+<p><a href="/assets/texture-synthesis/lincoln.jpg" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/lincoln.jpg" alt="image" />
+</a></p>
+
+<p><em>Output image</em></p>
+
+<p><a href="/assets/texture-synthesis/abe-transfer-better.png" class="fluidbox-trigger">
+  <img src="/assets/texture-synthesis/abe-transfer-better.png" alt="image" />
+</a></p>
+
+<p>The background on the Abe Lincoln image shows the sensitivity to brightness that texture transfer can have. The left wall required a brighter yogurt patch, whereas the right didn’t - even though the wall should be the same, the lighting made the left and right sides look different in the output. This could be fixed using different parameters or correspondence maps.</p>
+
+<p>In our opinion, this was the most difficult lab to implement so far. In light of this, we’d like to quote Efros from his paper: “[This] algorithm is trivial to implement” - I’m glad our struggle was appreciated.</p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Image Quilting for Texture Synthesis and Transfer - http://localhost:4000/posts/image-quilting ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/posts/image-quilting', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=http://localhost:4000/posts/image-quilting', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script>
+              (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//ahrisu.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    <a href="/about" title="About me">Alice Wang's</a> site for her projects, tutorials, games, art and more. Built with Jekyll and <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">Chalk</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

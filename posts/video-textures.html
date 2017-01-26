@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>alice wang | Video Textures</title>
+  <meta name="description" content="Project 4 for CSE555: Computational Photography.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Video Textures">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:4000/posts/video-textures">
+  <meta property="og:description" content="Project 4 for CSE555: Computational Photography.">
+  <meta property="og:site_name" content="alice wang">
+  <meta property="og:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="http://localhost:4000/posts/video-textures">
+  <meta name="twitter:title" content="Video Textures">
+  <meta name="twitter:description" content="Project 4 for CSE555: Computational Photography.">
+  <meta name="twitter:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="http://localhost:4000/feed.xml" type="application/rss+xml" rel="alternate" title="alice wang Last 10 blog posts" />
+
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="alice wang">alice wang</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <span class="icon icon-android-person"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/Ahris" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@Ahris" target="_blank" title="Medium">
+          <span class="icon icon-android-favorite-outline"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://saltyalice.tumblr.com/archive" target="_blank" title="Tumblr">
+          <span class="icon icon-android-color-palette"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:alicewang54@gmail.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Video Textures</h1>
+            <p>Project 4 for CSE555: Computational Photography.</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                April 5, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  7 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/comp-photo">comp-photo</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <center>
+    <a href="/assets/video-textures/city-4.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/city-4.gif" alt="image" />
+</a>
+
+
+</center>
+
+<p><em>Implemented by Jordan Mecom and Alice Wang.</em></p>
+
+<p>View the repository <a href="https://github.com/Ahris/video-texture">here.</a>  This is a cross post from <a href="https://jmecom.github.io/projects/computational-photography/video-textures/">Jordan’s site</a>.</p>
+
+<p>This project implements the paper <a href="http://www.cc.gatech.edu/cpl/projects/videotexture/SIGGRAPH2000/index.htm">'’Video Textures’’ by Schodl, Szeliski, Salesin, and Essa</a>. The aim is to create a ‘‘new type of medium’’ called a <em>video texture</em>, which is ‘‘somewhere between a photograph and a video’’. The idea is to input a video which has some repeated motion (the <em>texture</em>), such as a flag waving, rain, or a candle flame. The output is a new video that infinitely extends the original video in a seameless way. In practice, the output isn’t really infinte, but is instead looped using a video player and is sufficiently long as to appear to never repeat.</p>
+
+<p>We’ll describe the algorithm in detail, and then share results and failure cases.</p>
+
+<h2 id="approach-and-algorithm-analysis">Approach and Algorithm Analysis</h2>
+
+<p>There are two main parts to the algorithm. First, the video texture must be extracted from the input video. Second, a new video that synthesizes the video texture must be created.</p>
+
+<p>But, the key idea behind the algorithm is this: given a frame of a video, we can select a plausible next frame by randomly picking a similar frame to the one that would have been played in the original video. This next frame may not be the actual next frame in the input, but it may be. In this way, we can infinitely and smoothly extend a video.</p>
+
+<h3 id="extracting-the-video-texture">Extracting the video texture</h3>
+
+<p>To extract the video texture, we need to compute how similar pairs of frames are to each other. This can be accomplished by calculating the sum of squared difference between each pair of frames, and storing the results in a distance matrix, D. From there, we can compute a probability matrix, P, which assigns probabilities between pairs of frames. P can then be used to calculate the next frame in the output video given a current frame: since a frame is a row, we discretely sample the next frame using the probability distribution across a row of P. The pseudocode is below</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c"># Construct D, the distance matrix</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">pairwise</span> <span class="n">distance</span> <span class="n">between</span> <span class="nb">all</span> <span class="n">frames</span><span class="p">,</span> <span class="n">using</span> <span class="n">SSD</span>
+<span class="n">shift</span> <span class="n">D</span> <span class="n">to</span> <span class="n">the</span> <span class="n">right</span> <span class="n">by</span> <span class="mi">1</span><span class="p">,</span> <span class="n">to</span> <span class="n">align</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">frame</span> <span class="k">with</span> <span class="n">potential</span> <span class="n">new</span> <span class="n">frames</span>
+
+<span class="c"># Construct P, the probability matrix</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">average</span> <span class="n">of</span> <span class="n">non</span><span class="o">-</span><span class="n">zero</span> <span class="n">D</span> <span class="n">values</span> <span class="o">*</span> <span class="n">SIGMA_MULTIPLE</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">D</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span>
+<span class="n">normalize</span> <span class="n">P</span> <span class="n">so</span> <span class="n">that</span> <span class="n">the</span> <span class="nb">sum</span> <span class="n">of</span> <span class="n">a</span> <span class="n">row</span> <span class="ow">is</span> <span class="mi">1</span></code></pre></figure>
+
+<p>P is created using an exponential function and dividing by a constant, sigma. The paper notes that sigma is (often, but in our case always) set to a small multiple of the average non-zero D values. The user-set parameter SIGMA_MULTIPLE controls sigma further: smaller values of sigma force the best transitions to be taken, and larger values allow for more randomness. We typically set SIGMA_MULTIPLE to 0.05.</p>
+
+<h4 id="preserving-dynamics">Preserving dynamics</h4>
+
+<p>In some cases, the input video has a fluid motion that the video texture should preserve. The paper gives the example of a pendulum swinging: the algorithm described above doesn’t account for the fact that original video has a side-to-side motion. So, the resulting texture may jitter back and forth since there’s no distinction that the next frame may have come from the left side or the right side in the original video.</p>
+
+<p>This is easily fixed by modifying D so that the pairwise distance between frames also considers a few frames around it. This can be achieved by filtering D using a length 2 or 4 filter with weights set to the binomial coefficients (to approximate a Gaussian distribution, with the correct width). The psuedocode for this modification is below</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c"># Modify D to preserve motion</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">a</span> <span class="mi">2</span> <span class="ow">or</span> <span class="mi">4</span> <span class="n">length</span> <span class="nb">filter</span> <span class="k">with</span> <span class="n">binomial</span> <span class="n">weights</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="c"># Neighbors are on the diagonal in D</span>
+<span class="nb">filter</span> <span class="n">D</span> <span class="k">with</span> <span class="n">w</span>
+<span class="n">crop</span> <span class="n">D</span> <span class="n">along</span> <span class="n">the</span> <span class="n">edges</span> <span class="n">due</span> <span class="n">to</span> <span class="n">the</span> <span class="nb">filter</span>
+
+<span class="c"># From here, continue on with making P as described above</span></code></pre></figure>
+
+<p>The impact on D can be visualized below:</p>
+
+<p><a href="/assets/video-textures/frame-dist.png" class="fluidbox-trigger">
+  <img src="/assets/video-textures/frame-dist.png" alt="image" />
+</a></p>
+
+<p>Blurring can be observed along the diagonals, and D is slightly smaller in overall size due to the cropping.</p>
+
+<h3 id="writing-the-video">Writing the video</h3>
+
+<p>Once appropriate transitions have been identified, we can then write the video texture out. The paper describes two approaches to do so: random playback, and video loops.</p>
+
+<h4 id="random-playback">Random playback</h4>
+
+<p>Random playback is an easy to implement, intuitive, and fast approach. The algorithm is described in pseudocode below</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">start</span> <span class="n">at</span> <span class="n">some</span> <span class="n">frame</span>
+<span class="n">repeat</span><span class="p">:</span>
+  <span class="n">write</span> <span class="n">the</span> <span class="n">current</span> <span class="n">frame</span> <span class="n">i</span>
+  <span class="n">discretely</span> <span class="n">sample</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">frame</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">using</span> <span class="n">the</span> <span class="n">probability</span> <span class="n">distribution</span>
+    <span class="n">found</span> <span class="ow">in</span> <span class="n">P</span> <span class="n">at</span> <span class="n">the</span> <span class="n">ith</span> <span class="n">row</span></code></pre></figure>
+
+<h4 id="video-loops">Video loops</h4>
+
+<p>The motivation behind video loops is to preselect a sequence of loops that can be repeated, so that the resulting texture smoothly repeats when played on a conventional video player’s repeat setting. We attempted to implement video loops, but were unable to produce any compelling results with the algorithm.</p>
+
+<p>The paper gives an example to describe how the video loops dynamic programming algorithm and scheduling algorithm works. Our implementation was successful on this example, but when we tested on real videos there were very obvious skips (see failure cases below) that shouldn’t occur.</p>
+
+<p>We feel that the most likely cause of the problem was our selection of primitive loops. We pruned the input video as the paper describes, but there isn’t much discussion by the authors on how to actually select the primitive loops to run the video loop algorithm on.</p>
+
+<h2 id="results">Results</h2>
+
+<p>The results of the algorithm are displayed below, as looping GIFs. In all of the below examples we use random playback.</p>
+
+<center>
+<a href="/assets/video-textures/clock-regular.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/clock-regular.gif" alt="image" />
+</a>
+
+
+<a href="http://www.cc.gatech.edu/cpl/projects/videotexture/SIGGRAPH2000/index.htm">Source video</a>
+</center>
+
+<p>Above, we first demonstrate the primary example in the paper of a pendulum swinging. Here we’ve implemented random playback and did not preserve dynamics. As such, the resulting video skips unnaturally. This is solved in the next example by preserving motion.</p>
+
+<center>
+<a href="/assets/video-textures/clock-preserve.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/clock-preserve.gif" alt="image" />
+</a>
+
+
+<a href="http://www.cc.gatech.edu/cpl/projects/videotexture/SIGGRAPH2000/index.htm">Source video</a>
+</center>
+
+<p>The result is much better after using the filter as described above.</p>
+
+<center>
+<a href="/assets/video-textures/snow.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/snow.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/9232301">Source video</a>
+</center>
+
+<p>Snowfall makes for a great video texture as it’s very hard to perceive where the loop happens. Snowflakes all pretty much look the same, so the frame transitions are very smooth. Furthermore, the snow is falling quickly which makes it harder to notice any poorer transitions that may be made.</p>
+
+<center>
+<a href="/assets/video-textures/waterfall.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/waterfall.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/737632">Source video</a>
+</center>
+
+<p>The waterfall performs slightly worse, although still does quite well. There’s a slight skip in the middle of the texture, but it’s only very noticable if you’re carefully looking. The paper mentions that this can be solved using cross-fading, but we didn’t implement this. In this case in particular, we believe cross-fading would work very well since water doesn’t have a sharp edges that would cause the fade stand out.</p>
+
+<center>
+<a href="/assets/video-textures/city-1.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/city-1.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/90275165">Source video</a>
+</center>
+
+<p>This is the first of four city video textures that we made. This one is the most interesting; because the input video is a time-lapse, the lighting across the scene changes noticably. The actual video texture algorithm performs well, however some pre-processing could improve it. For example, one could normalize the intensities of the frames of the input video to make the changes in the lighting less drastic.</p>
+
+<center>
+<a href="/assets/video-textures/city-2.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/city-2.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/90275165">Source video</a>
+</center>
+
+<p>When we first were introduced to the idea of video textures, we immediately thought of <a href="https://www.reddit.com/r/cinemagraphs">cinemagraphs</a> which are ‘‘high quality gifs that are very smoothly looped’’. Although different in approach, (cinemagraphs are manually made and don’t require well defined patterns), the two ideas can produce similar results. We wanted to create a cinemagraph-style video texture, and so this was our attempt.</p>
+
+<center>
+<a href="/assets/video-textures/city-3.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/city-3.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/90275165">Source video</a>
+</center>
+
+<center>
+<a href="/assets/video-textures/city-4.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/city-4.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/90275165">Source video</a>
+</center>
+
+<p>When the input video is well filmed, and lends itself to a nice video texture, the result can be very compelling. This is shown by the final two results, above.</p>
+
+<h3 id="failure-cases">Failure cases</h3>
+
+<p>But, not every input video worked out well. These cases are discussed in this section.</p>
+
+<center>
+<a href="/assets/video-textures/waterfall-vl-failure.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/waterfall-vl-failure.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/737632">Source video</a>
+</center>
+
+<p>The texture above was generated by our video loops algorithm. Skipping is very noticable, when it shouldn’t be. Similar behavior was observed for every texture created by our video loops code.</p>
+
+<center>
+<a href="/assets/video-textures/waterfall-pm-failure.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/waterfall-pm-failure.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/737632">Source video</a>
+</center>
+
+<p>This texture tries to preserve motion, but causes large hangs in doing so. We thought we could improve the waterfall result by preserving motion, but instead the quality actually degraded. We think that motion should only be preserved when there’s a clear movement pattern, such as the clock pendulum.</p>
+
+<center>
+<a href="/assets/video-textures/bear.gif" class="fluidbox-trigger">
+  <img src="/assets/video-textures/bear.gif" alt="image" />
+</a>
+
+
+<a href="https://vimeo.com/16369165">Source video (00:49)</a>
+</center>
+
+<p>We thought the bear would slowly move around in the output video texture, but the result is much more jittery than expected. Perhaps a longer input video with more possible frames to choose from could create a better result. As the input video currently stands, there isn’t enough of a ‘‘pattern’’ to create a good video texture.</p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Video Textures - http://localhost:4000/posts/video-textures ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/posts/video-textures', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=http://localhost:4000/posts/video-textures', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script>
+              (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//ahrisu.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    <a href="/about" title="About me">Alice Wang's</a> site for her projects, tutorials, games, art and more. Built with Jekyll and <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">Chalk</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

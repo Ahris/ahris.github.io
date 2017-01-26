@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>alice wang</title>
+    <description></description>
+    <link>http://localhost:4000</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    
+      <item>
+        <title>Retro Programming with Chip8</title>
+        <description>Chip8 game for the 2017 Global Game Jam</description>
+        <pubDate>Mon, 23 Jan 2017 00:00:00 -0800</pubDate>
+        <link>http://localhost:4000/posts/piper-chip8</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/piper-chip8</guid>
+      </item>
+    
+      <item>
+        <title>Image Analogies</title>
+        <description>Project 5 for CSE555: Computational Photography.</description>
+        <pubDate>Wed, 11 May 2016 00:00:00 -0700</pubDate>
+        <link>http://localhost:4000/posts/image-analogies</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/image-analogies</guid>
+      </item>
+    
+      <item>
+        <title>Video Textures</title>
+        <description>Project 4 for CSE555: Computational Photography.</description>
+        <pubDate>Tue, 05 Apr 2016 00:00:00 -0700</pubDate>
+        <link>http://localhost:4000/posts/video-textures</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/video-textures</guid>
+      </item>
+    
+      <item>
+        <title>Image Quilting for Texture Synthesis and Transfer</title>
+        <description>Project 3 for CSE555: Computational Photography.</description>
+        <pubDate>Tue, 22 Mar 2016 00:00:00 -0700</pubDate>
+        <link>http://localhost:4000/posts/image-quilting</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/image-quilting</guid>
+      </item>
+    
+      <item>
+        <title>Gradient Domain Fusion</title>
+        <description>Project 2 for CSE555: Computational Photography.</description>
+        <pubDate>Thu, 25 Feb 2016 00:00:00 -0800</pubDate>
+        <link>http://localhost:4000/posts/gradient-domain-fusion</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/gradient-domain-fusion</guid>
+      </item>
+    
+      <item>
+        <title>Image Alignment with Pyramids</title>
+        <description>Project 1 for CSE555: Computational Photography.</description>
+        <pubDate>Fri, 05 Feb 2016 00:00:00 -0800</pubDate>
+        <link>http://localhost:4000/posts/image-pyramid</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/image-pyramid</guid>
+      </item>
+    
+      <item>
+        <title>Fae</title>
+        <description>Puzzle-platformer made for the 2015 Global Game Jam.</description>
+        <pubDate>Sun, 25 Jan 2015 00:00:00 -0800</pubDate>
+        <link>http://localhost:4000/posts/global-game-jam-2015</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/global-game-jam-2015</guid>
+      </item>
+    
+      <item>
+        <title>Star Graph</title>
+        <description>A galaxy of game reviews. (Currently broken due to deprecated APIs.)</description>
+        <pubDate>Thu, 01 Jan 2015 00:00:00 -0800</pubDate>
+        <link>http://localhost:4000/posts/star-graph</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/star-graph</guid>
+      </item>
+    
+      <item>
+        <title>Race the Rainbow</title>
+        <description>Multi-player racing game made for the 2014 Global Game Jam.</description>
+        <pubDate>Sun, 26 Jan 2014 00:00:00 -0800</pubDate>
+        <link>http://localhost:4000/posts/global-game-jam-2014</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/global-game-jam-2014</guid>
+      </item>
+    
+  </channel>
+</rss>

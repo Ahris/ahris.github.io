@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>alice wang | Image Alignment with Pyramids</title>
+  <meta name="description" content="Project 1 for CSE555: Computational Photography.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Image Alignment with Pyramids">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:4000/posts/image-pyramid">
+  <meta property="og:description" content="Project 1 for CSE555: Computational Photography.">
+  <meta property="og:site_name" content="alice wang">
+  <meta property="og:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="http://localhost:4000/posts/image-pyramid">
+  <meta name="twitter:title" content="Image Alignment with Pyramids">
+  <meta name="twitter:description" content="Project 1 for CSE555: Computational Photography.">
+  <meta name="twitter:image" content="http://localhost:4000/assets/og-image.jpg">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="http://localhost:4000/feed.xml" type="application/rss+xml" rel="alternate" title="alice wang Last 10 blog posts" />
+
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="alice wang">alice wang</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <span class="icon icon-android-person"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/Ahris" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@Ahris" target="_blank" title="Medium">
+          <span class="icon icon-android-favorite-outline"></span>
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://saltyalice.tumblr.com/archive" target="_blank" title="Tumblr">
+          <span class="icon icon-android-color-palette"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:alicewang54@gmail.com" target="_blank" title="Email">
+          <span class="icon icon-at"></span>
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Image Alignment with Pyramids</h1>
+            <p>Project 1 for CSE555: Computational Photography.</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                February 5, 2016
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  5 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/comp-photo">comp-photo</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/image_pyramids/00345u_color_2_preview.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/00345u_color_2_preview.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Photo credits to the Library of Congress and Sergey Prokudin-Gorskii.
+  </div>
+
+<p>In this project, the goal was to read in the <a href="http://www.loc.gov/pictures/search/?q=Prokudin+negative&amp;sp=2&amp;st=grid">glass plate images</a> by <a href="https://en.wikipedia.org/wiki/Sergey_Prokudin-Gorsky">Sergey Prokudin-Gorskii</a> and align the three color channels into one full-color, composite photo. The first part of the project implements alignment using a single-scale algorithm for smaller images. The second part uses an image-pyramid to align high-resolution pictures. To improve the visual quality of the final images, I also cropped the images to remove the excess borders. The code can be found <a href="https://github.com/Ahris/Pyramid">here</a>.</p>
+
+<h2 id="approach-and-algorithm">Approach and Algorithm</h2>
+
+<p>Here is a general overview and pseudocode for my project. It can be roughly broken down into the follow steps:</p>
+
+<figure class="highlight"><pre><code class="language-html" data-lang="html">1. Read in the image and trim the uniform white border
+2. Crop the image into thirds
+3. Remove the jagged black border (more details in the Extra Credits section)
+4. Call the single or multi-scale alignment function
+5. Combine the RBG color channels in a 3D array
+6. Save the image</code></pre></figure>
+
+<h3 id="single-scale-alignment">Single-scale Alignment</h3>
+
+<p><code class="highlighter-rouge">Single-scale alignment</code> is relatively straight forward. The green and red channels are aligned to the blue channel, which acts as the anchor. Displacement vectors for the green and red channels are returned from the function along with the aligned red and green channels. We assume the offset is a translation in the x or y direction.</p>
+
+<p>To find the offset, we first run the image through a Sobel edge filter to remove the noise and to only match the main features. Within a given range, every (x,y) offset combination is tried and evaluated for how well the shifted channels match the blue channel. The channels are evaluated using a sum of squared differences: <code class="highlighter-rouge">sum(pow(image1 - image2, 2))</code></p>
+
+<p>The displacement with the lowest score (which was usually around 11,000,00) is then returned. Over the average of 10 runs, this algorithm takes <code class="highlighter-rouge">4.53171 seconds</code>. And now for the fun part. Here are some of the resulting images.</p>
+
+<p><a href="/assets/image_pyramids/single_scale_align.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/single_scale_align.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Single-scale aligned glass plate negatives.
+  </div>
+
+<h3 id="multi-scale-alignment">Multi-scale Alignment</h3>
+
+<p><code class="highlighter-rouge">Multi-scale alignment</code> follows a similar vein. The main difference is that the photos are shrunk to a manageable size and then evaluated. Once the smallest image’s displacement is found, it is scaled up and re-checked as we traverse back up the pyramid to the original, large image. I implemented this function recursively:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">if</span> <span class="n">image</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="mi">150</span><span class="n">px</span><span class="p">:</span>
+    <span class="n">Single</span><span class="o">-</span><span class="n">scale</span> <span class="n">align</span> <span class="n">the</span> <span class="n">red</span> <span class="ow">and</span> <span class="n">green</span> <span class="n">channels</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">Gaussian</span> <span class="n">blur</span> <span class="n">the</span> <span class="n">image</span>
+    <span class="n">Resize</span> <span class="n">the</span> <span class="n">image</span> <span class="n">to</span> <span class="n">half</span> <span class="n">its</span> <span class="n">original</span> <span class="n">size</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">multi_scale_align</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span> <span class="c"># scale up the recursive result</span>
+    <span class="n">Return</span> <span class="n">updated</span> <span class="n">offset</span> <span class="kn">from</span> <span class="nn">single_scale_align</span><span class="err">(</span><span class="nn">offset</span><span class="err">)</span></code></pre></figure>
+
+<p>Since multi-scale alignment calls the single-scale process, the evaluation function is the same. The run time of this algorithm was <code class="highlighter-rouge">12.653 seconds</code> over the average of 10 runs. Now, here are some more photos for your enjoyment.</p>
+
+<p><a href="/assets/image_pyramids/factory_color_preview.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/factory_color_preview.png" alt="image" />
+</a></p>
+
+<p><a href="/assets/image_pyramids/church_color_preview.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/church_color_preview.png" alt="image" />
+</a></p>
+
+<p><a href="/assets/image_pyramids/guy_color_preview.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/guy_color_preview.png" alt="image" />
+</a></p>
+
+<p><a href="/assets/image_pyramids/00211u_color_2_preview.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/00211u_color_2_preview.png" alt="image" />
+</a></p>
+
+<p><a href="/assets/image_pyramids/00093u_color_2_preview.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/00093u_color_2_preview.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    Multi-scale aligned glass plate negatives.
+  </div>
+
+<h2 id="experimental-analysis">Experimental Analysis</h2>
+
+<p>My alignment algorithms resulted in crisp photos overall, as seen above. There was one picture in my test set that didn’t do well with my edge evaluation. This could be because there weren’t strong edges to match in the photo. It did much better with a simple brightness alignment.</p>
+
+<p><a href="/assets/image_pyramids/00800v_color_compare.png" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/00800v_color_compare.png" alt="image" />
+</a></p>
+
+<div class="caption">
+    (Left) Aligned with edges. (Right) Aligned with brightness.
+  </div>
+
+<p>In the picture of the man in the garden, there is quite a bit of noticeable haziness. This could be due to the camera being unfocused or overexposure from the bright outdoor lighting. The stained glass example also has some artifacting upon close inspection. The yellow channel seems shifted, which could be caused by indistinct boundaries in the yellow channel.</p>
+
+<h2 id="extra-credit">Extra Credit</h2>
+
+<p>I attempted cropping and edge alignment for extra credit.</p>
+
+<p>Edge alignment involved applying a Sobel filter from the SciPy package on the image before the differences between two channels were calculated. Details of how it was incorporated into the algorithm in described in the single-scale alignment section above. Without edge alignment, there was a considerable amount of blur in each image. You can see a sample below.</p>
+
+<p><a href="/assets/image_pyramids/without_edge.jpg" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/without_edge_preview.jpg" alt="image" />
+</a></p>
+
+<div class="caption">
+    So blurry that it looks like an earthquake.
+  </div>
+
+<p>Next, I implemented auto-image cropping. This was one of the most challenging parts of the lab because the dark border around each image wasn’t uniform. Some of the borders were even jagged or slanted. I cut off the dark border in two steps: crop the left and right borders from the entire original image and then crop the tops and bottoms of each separated channel. I needed two separate steps to ensure a uniform cut across all three channels since the sizes of each image needed to match in order to use my evaluation function.</p>
+
+<p>To crop the left-right borders, I need to determine if an area of the photo is black, increase the contrast, round each pixel to either black or white, sum up the number of white pixels are in each column. If the number of white pixels doesn’t exceed a threshold (30% white), then that column is a border. As soon as I find a column that’s whiter than the border, I set that as the cut off point and crop the image. I allow for white specks within 2% of the width and I don’t allow the border to exceed 10% of the image width overall. The same process was used for the top and bottom borders, but with the rows and cols switched. The images look considerable neater without the dark borders. Examples of uncropped borders can be seen on the Library of Congress’s website.</p>
+
+<p>I feel like I can keep tinkering with this lab forever. There are so many small changes and optimizations to be made. This project was a great learning experience. A takeaway I have was learning proper <a href="https://google.github.io/styleguide/pyguide.html">Python styling</a> and project organization. I hope to learn even more Python throughout the semester.</p>
+
+<h3 id="thanks">Thanks!</h3>
+
+<p><a href="/assets/image_pyramids/dog.gif" class="fluidbox-trigger">
+  <img src="/assets/image_pyramids/dog.gif" alt="image" />
+</a></p>
+
+<div class="caption">
+    Time lapse of a dog's nap -- what could it be dreaming of?
+  </div>
+
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Image Alignment with Pyramids - http://localhost:4000/posts/image-pyramid ', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/posts/image-pyramid', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=http://localhost:4000/posts/image-pyramid', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script>
+              (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//ahrisu.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    <a href="/about" title="About me">Alice Wang's</a> site for her projects, tutorials, games, art and more. Built with Jekyll and <a href="https://github.com/nielsenramon/chalk" target="_blank" title="Download Chalk">Chalk</a>.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>
